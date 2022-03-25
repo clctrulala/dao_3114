@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Util {
-    // реализуйте настройку соеденения с БД
     private final String dbHost = "localhost:3306";
     private final String dbOwner = "root";
     private final String dbPassword = "biblio888tekar";
@@ -28,12 +27,8 @@ public class Util {
 
     private SessionFactory connect() {
         final String dbURL = "jdbc:mysql://" + dbHost + "/" + dbName;
-//        final String sqlDialect = "org.hibernate.dialect.MySQLInnoDBDialect";
         final String sqlDialect = "org.hibernate.dialect.MySQLDialect";
-//        final String dbDriver = "com.mysql.jdbc.Driver";
         final String dbDriver = "com.mysql.cj.jdbc.Driver";
-//        final String dbPoolSize = "10";
-//        final String dbAutocommit = "true";
 
         Map<String, String> hibernateSettings = new HashMap<>();
 
@@ -42,9 +37,7 @@ public class Util {
         hibernateSettings.put(AvailableSettings.URL, dbURL);
         hibernateSettings.put(AvailableSettings.USER, dbOwner);
         hibernateSettings.put(AvailableSettings.PASS, dbPassword);
-        hibernateSettings.put(AvailableSettings.SHOW_SQL, "true");
-//            hibernateSettings.put(AvailableSettings.POOL_SIZE, dbPoolSize);
-//            hibernateSettings.put(AvailableSettings.AUTOCOMMIT, dbAutocommit);
+//        hibernateSettings.put(AvailableSettings.SHOW_SQL, "true");
 
         StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
                 .applySettings(hibernateSettings)
@@ -52,7 +45,6 @@ public class Util {
 
         return dbSessionFactory = new MetadataSources( registry )
                 .addAnnotatedClass(User.class)
-                //.addPackage("jm.task.core.jdbc.model")
                 .buildMetadata()
                 .buildSessionFactory();
     } // connect()

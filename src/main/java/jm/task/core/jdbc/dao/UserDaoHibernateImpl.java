@@ -30,11 +30,12 @@ public class UserDaoHibernateImpl implements UserDao {
 
         try( Session session = util.getDBConnect().openSession() ) {
             Transaction transaction = session.beginTransaction();
+
             session.createSQLQuery(sqlUsersCreateTable).executeUpdate();
-//            session.flush();
+
             transaction.commit();
         }
-        System.out.printf("Table \"%s\" created", dbTableName);
+
     }
 
     @Override
@@ -43,37 +44,35 @@ public class UserDaoHibernateImpl implements UserDao {
 
         try( Session session = util.getDBConnect().openSession() ){
             Transaction transaction = session.beginTransaction();
+
             session.createSQLQuery(sqlUsersDropTable).executeUpdate();
-//            session.flush();
+
             transaction.commit();
         }
     }
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        System.out.println("persist user");
-
         try( Session session = util.getDBConnect().openSession() ){
             Transaction transaction = session.beginTransaction();
+
             session.persist( new User(name, lastName, age) );
-//            session.flush();
+
             transaction.commit();
         }
     }
 
     @Override
     public void removeUserById(long id) {
+        final String hqlRemove = String.format("delete %s user where user.id = :id", dbTableName);
+
         try( Session session = util.getDBConnect().openSession() ){
             Transaction transaction = session.beginTransaction();
 
-            String hqlRemove = String.format("delete %s user where user.id = :id", dbTableName);
-            int deletedCount = session.createQuery( hqlRemove )
+            session.createQuery( hqlRemove )
                     .setParameter( "id", id )
                     .executeUpdate();
 
-            System.out.printf("Удалено %d идентификаторов\n", deletedCount);
-
-//            session.flush();
             transaction.commit();
         }
     }
@@ -86,7 +85,7 @@ public class UserDaoHibernateImpl implements UserDao {
             Transaction transaction = session.beginTransaction();
 
             String hqlGetAll = String.format("select user from %s user", dbTableName);
-            users = (List<User>)session.createQuery( hqlGetAll ).getResultList();
+            users = session.createQuery( hqlGetAll ).getResultList();
 
             transaction.commit();
         }
@@ -101,9 +100,6 @@ public class UserDaoHibernateImpl implements UserDao {
             String hqlClean = String.format("delete %s", dbTableName);
             int deletedCount = session.createQuery( hqlClean ).executeUpdate();
 
-            System.out.printf("Удалено %d идентификаторов\n", deletedCount);
-
-//            session.flush();
             transaction.commit();
         }
     }

@@ -17,28 +17,23 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         UserServiceImpl sao = new UserServiceImpl();
-        sao.createUsersTable();
-
         List<User> userList = new ArrayList<>(Arrays.asList(
-            new User("Dominik", "Orero", (byte) 18),
-            new User("Roberta", "Potter", (byte) 55),
-            new User("Abraham", "Livenshtein", (byte) 38),
-            new User("Nikita", "Novikov", (byte) 6)
+                new User("Dominik", "Orero", (byte) 18),
+                new User("Roberta", "Potter", (byte) 55),
+                new User("Abraham", "Livenshtein", (byte) 38),
+                new User("Nikita", "Novikov", (byte) 6)
         ));
 
-//        for (User user : userList) {
-//            sao.saveUser(user.getName(), user.getLastName(), user.getAge());
-//            System.out.printf("User с именем - %s добавлен в базу\n", user.getName());
-//        }
+        sao.createUsersTable();
 
-        sao.saveUser("Dominik", "Orero", (byte) 18);
-        System.out.println(sao.getAllUsers().size());
+        for (User user : userList) {
+            sao.saveUser(user.getName(), user.getLastName(), user.getAge());
+            System.out.printf("User с именем - %s добавлен в базу\n", user.getName());
+        }
 
         for (User user : sao.getAllUsers()) {
             System.out.println(user);
         }
-
-        sao.removeUserById(2);
 
         sao.cleanUsersTable();
         sao.dropUsersTable();
