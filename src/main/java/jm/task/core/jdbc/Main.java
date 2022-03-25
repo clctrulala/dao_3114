@@ -25,14 +25,20 @@ public class Main {
             new User("Abraham", "Livenshtein", (byte) 38),
             new User("Nikita", "Novikov", (byte) 6)
         ));
-        for (User user : userList) {
-            sao.saveUser(user.getName(), user.getLastName(), user.getAge());
-            System.out.printf("User с именем - %s добавлен в базу\n", user.getName());
-        }
+
+//        for (User user : userList) {
+//            sao.saveUser(user.getName(), user.getLastName(), user.getAge());
+//            System.out.printf("User с именем - %s добавлен в базу\n", user.getName());
+//        }
+
+        sao.saveUser("Dominik", "Orero", (byte) 18);
+        System.out.println(sao.getAllUsers().size());
 
         for (User user : sao.getAllUsers()) {
             System.out.println(user);
         }
+
+        sao.removeUserById(2);
 
         sao.cleanUsersTable();
         sao.dropUsersTable();
