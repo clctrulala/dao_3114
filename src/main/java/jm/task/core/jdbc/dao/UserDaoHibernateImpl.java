@@ -5,6 +5,7 @@ import jm.task.core.jdbc.util.Util;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
@@ -57,21 +58,27 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void removeUserById(long id) {
         try( Session session = util.getSession() ){
-            Transaction transaction = session.beginTransaction();
+            try {
+                Transaction transaction = session.beginTransaction();
 
 //            session.createQuery( String.format("delete %s user where user.id = :id", dbTableName) )
 //                    .setParameter( "id", id )
 //                    .executeUpdate();
 
-            CriteriaQuery<User> query = session.getCriteriaBuilder().createQuery(User.class);
-            Root<User> user = query.from(User.class);
-            Metamodel metaModel = session.getMetamodel();
-            EntityType<User> User_ = metaModel.entity(User.class);
+                CriteriaQuery<User> query = session.getCriteriaBuilder().createQuery(User.class);
+                Root<User> user = query.from(User.class);
+                Metamodel metaModel = session.getMetamodel();
+                EntityType<User> User_ = metaModel.entity(User.class);
 
-            query.where( user.get(User_.getId(Long.class)).in(id) );
-            session.remove( session.createQuery(query).getSingleResult() );
+                query.where( user.get(User_.getId(Long.class)).in(id) );
+                session.remove( session.createQuery(query).getSingleResult() );
 
-            transaction.commit();
+                transaction.commit();
+            } catch ( Exception err ) {
+                if ( session.getTransaction().getStatus() == TransactionStatus.ACTIVE || session.getTransaction().getStatus() == TransactionStatus.MARKED_ROLLBACK ) {
+                    session.getTransaction().rollback();
+                }
+            }
         }
     }
 
