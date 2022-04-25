@@ -2,19 +2,13 @@ package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
-import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.query.NativeQuery;
-import org.hibernate.query.Query;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
-    private final String dbTableName = "User";
     private final Util util = new Util();
 
     public UserDaoHibernateImpl() {
@@ -24,9 +18,9 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-        final String sqlUsersCreateTable = String.format("CREATE TABLE IF NOT EXISTS %s " +
-                "(id BIGINT PRIMARY KEY AUTO_INCREMENT, Name VARCHAR(20), lastName VARCHAR(20)" +
-                ", age TINYINT)", dbTableName);
+        final String sqlUsersCreateTable = "create table if not exists User " +
+                "(id bigint primary key auto_increment, Name varchar(20), lastName varchar(20)" +
+                ", age tinyint)";
 
         try( Session session = util.getDBConnect().openSession() ) {
             Transaction transaction = session.beginTransaction();
@@ -40,7 +34,7 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void dropUsersTable() {
-        final String sqlUsersDropTable = String.format("DROP TABLE IF EXISTS %s;", dbTableName);
+        final String sqlUsersDropTable = "drop table if exists User";
 
         try( Session session = util.getDBConnect().openSession() ){
             Transaction transaction = session.beginTransaction();
@@ -64,17 +58,21 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void removeUserById(long id) {
-        final String hqlRemove = String.format("delete %s user where user.id = :id", dbTableName);
+        final String hqlRemove = "delete User user where user.id = :id";
 
         try( Session session = util.getDBConnect().openSession() ){
-            Transaction transaction = session.beginTransaction();
+            try {Transaction transaction = session.beginTransaction();
+                session.createQuery( hqlRemove )
+                        .setParameter( "id", id )
+                        .executeUpdate();
 
-            session.createQuery( hqlRemove )
-                    .setParameter( "id", id )
-                    .executeUpdate();
-
-            transaction.commit();
+                transaction.commit();
+            } catch ( Exception err ) {
+                if ( session.getTransaction().getStatus() == TransactionStatus.ACTIVE || session.getTransaction().getStatus() == TransactionStatus.MARKED_ROLLBACK ) {
+                session.getTransaction().rollback();
+            }
         }
+    }
     }
 
     @Override
@@ -84,8 +82,8 @@ public class UserDaoHibernateImpl implements UserDao {
         try( Session session = util.getDBConnect().openSession() ){
             Transaction transaction = session.beginTransaction();
 
-            String hqlGetAll = String.format("select user from %s user", dbTableName);
-            users = session.createQuery( hqlGetAll ).getResultList();
+            String hqlGetAll = "select user from User user";
+            users = session.createQuery( hqlGetAll, User.class ).getResultList();
 
             transaction.commit();
         }
@@ -97,8 +95,8 @@ public class UserDaoHibernateImpl implements UserDao {
         try( Session session = util.getDBConnect().openSession() ){
             Transaction transaction = session.beginTransaction();
 
-            String hqlClean = String.format("delete %s", dbTableName);
-            int deletedCount = session.createQuery( hqlClean ).executeUpdate();
+            String hqlClean = "delete User";
+            session.createQuery( hqlClean ).executeUpdate();
 
             transaction.commit();
         }
