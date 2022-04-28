@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
-    private final String dbTableName = "user";
-    private final Util util = new Util();
 
     public UserDaoJDBCImpl() {
     }

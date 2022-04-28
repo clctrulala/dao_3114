@@ -16,40 +16,35 @@ public class Util implements AutoCloseable {
     private final String dbOwner = "root";
     private final String dbPassword = "biblio888tekar";
     private final String dbName = "pre_project_test_schema";
+    private final String dbURL = "jdbc:mysql://" + dbHost + "/" + dbName;
+    private final String sqlDialect = "org.hibernate.dialect.MySQL8Dialect";
+    private final String dbDriver = "com.mysql.cj.jdbc.Driver";
     private SessionFactory dbSessionFactory;
 
     public Util() {
-        dbSessionFactory = connect();
+        dbSessionFactory = getSessionFactory();
     }
 
-    private SessionFactory connect() {
-        final String dbURL = "jdbc:mysql://" + dbHost + "/" + dbName;
-        final String sqlDialect = "org.hibernate.dialect.MySQL8Dialect";
-        final String dbDriver = "com.mysql.cj.jdbc.Driver";
+    public SessionFactory getSessionFactory() {
+        if ( null == dbSessionFactory || dbSessionFactory.isClosed() ) {
+            Map<String, String> hibernateSettings = new HashMap<>();
 
-        Map<String, String> hibernateSettings = new HashMap<>();
+            hibernateSettings.put(AvailableSettings.DRIVER, dbDriver);
+            hibernateSettings.put(AvailableSettings.DIALECT, sqlDialect);
+            hibernateSettings.put(AvailableSettings.URL, dbURL);
+            hibernateSettings.put(AvailableSettings.USER, dbOwner);
+            hibernateSettings.put(AvailableSettings.PASS, dbPassword);
 
-        hibernateSettings.put(AvailableSettings.DRIVER, dbDriver);
-        hibernateSettings.put(AvailableSettings.DIALECT, sqlDialect);
-        hibernateSettings.put(AvailableSettings.URL, dbURL);
-        hibernateSettings.put(AvailableSettings.USER, dbOwner);
-        hibernateSettings.put(AvailableSettings.PASS, dbPassword);
-//        hibernateSettings.put(AvailableSettings.HBM2DDL_AUTO, "create-drop");
-//        hibernateSettings.put(AvailableSettings.SHOW_SQL, "true");
+            StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+                    .applySettings(hibernateSettings)
+                    .build();
 
-        StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-                .applySettings(hibernateSettings)
-                .build();
-
-        return dbSessionFactory = new MetadataSources( registry )
-                .addAnnotatedClass(User.class)
-                .buildMetadata()
-                .buildSessionFactory();
-    } // connect()
-
-    public Session getSession() {
-        if ( null == dbSessionFactory || dbSessionFactory.isClosed() ) { dbSessionFactory = connect(); }
-        return dbSessionFactory.openSession();
+            return dbSessionFactory = new MetadataSources( registry )
+                    .addAnnotatedClass(User.class)
+                    .buildMetadata()
+                    .buildSessionFactory();
+        }
+        return dbSessionFactory;
     }
 
     @Override
@@ -60,4 +55,4 @@ public class Util implements AutoCloseable {
         }
     }
 
-} // Util class
+}
